@@ -7,7 +7,7 @@ This project uses the [DL2 framework](https://github.com/eth-sri/dl2) to create 
 The code has been tested on machines running python >= 3.8.
 To install and run the code, it is assumed that one has access to the following:
 
-- Our fork of the [DL2 framework](https://github.com/IvoAA/dl2). 
+- Our fork of the [DL2 framework](https://github.com/IvoAA/dl2) - OBS. it must be the master branch. 
 - The [MIMIC-III Benchmarks Code](https://github.com/YerevaNN/mimic3-benchmarks). 
 - The in-hospital-mortality dataset placed inside the 'data' folder.
 
