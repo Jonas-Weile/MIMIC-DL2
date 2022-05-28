@@ -9,6 +9,5 @@ __pycache__/
 .vscode/
 
 # folders
-data/
 plots/
 reports/
