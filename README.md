@@ -9,9 +9,10 @@ To install and run the code, it is assumed that one has access to the following:
 
 - Our fork of the [DL2 framework](https://github.com/IvoAA/dl2). 
 - The [MIMIC-III Benchmarks Code](https://github.com/YerevaNN/mimic3-benchmarks). 
-- The in-hospital-mortality dataset.
+- The in-hospital-mortality dataset placed inside the 'data' folder.
 
 The former two should simply be cloned locally, and then the locations must be added to the PYTHONPATH.
+
 To recreate the in-hospital-mortality dataset, one must have access to the MIMIC-III Database. Then, the benchmark can be created by following the instruction outlined in the repository for the MIMIC-III benchmarks as given above.
 
 The remaining dependencies are specified in the [requirements file](requirements.txt).
