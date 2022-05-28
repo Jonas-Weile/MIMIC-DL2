@@ -1,0 +1,13 @@
+ConfigArgParse
+functional
+matplotlib
+numpy
+pandas
+Pillow==9.0.1
+scipy
+six==1.16.0
+sklearn
+torch==1.11.0
+torchvision==0.12.0
+textX==1.8.0
+tqdm==4.64.0
