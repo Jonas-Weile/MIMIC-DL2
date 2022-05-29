@@ -31,18 +31,18 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Train NN with constraints.')
     parser = dl2.add_default_parser_args(parser)
     parser.add_argument('--batch-size', type=int, default=64, help='Number of samples in a batch.')
-    parser.add_argument('--num-iters', type=int, default=50, help='Number of oracle iterations.')
-    parser.add_argument('--num-epochs', type=int, default=300, help='Number of epochs to train for.')
-    parser.add_argument('--l2', type=int, default=0.01, help='L2 regularizxation.')
-    parser.add_argument('--pos-weight', type=int, default=3, help='Weight of positive examples.')
-    parser.add_argument('--grid-search', default=False, action='store_true')
-    parser.add_argument('--verbose', default=False, action='store_true')
-    parser.add_argument('--dl2-weight', type=float, default=0.0, help='Weight of DL2 loss.')
-    parser.add_argument('--delay', type=int, default=0, help='How many epochs to wait before training with constraints.')
     parser.add_argument('--constraint', type=str, required=True, help='the constraint to train with: LipschitzT(L), LipschitzG(eps, L), RobustnessT(eps1, eps2), RobustnessG(eps, delta), CSimiliarityT(), CSimilarityG(), LineSegmentG()')
+    parser.add_argument('--delay', type=int, default=0, help='How many epochs to wait before training with constraints.')
+    parser.add_argument('--dl2-weight', type=float, default=0.0, help='Weight of DL2 loss.')
+    parser.add_argument('--grid-search', default=False, action='store_true')
+    parser.add_argument('--l2', type=float, default=0.01, help='L2 regularizxation weight.')
+    parser.add_argument('--network-output', type=str, choices=['logits', 'prob', 'logprob'], default='logits', help='Wether to treat the output of the network as logits, probabilities or log(probabilities) in the constraints.')
+    parser.add_argument('--num-epochs', type=int, default=200, help='Number of epochs to train for.')
+    parser.add_argument('--num-iters', type=int, default=50, help='Number of oracle iterations.')
+    parser.add_argument('--pos-weight', type=float, default=3, help='Weight of positive examples.')
     parser.add_argument('--print-freq', type=int, default=10, help='Print frequency.')
     parser.add_argument('--report-dir', type=str, required=True, help='Directory where results should be stored')
-    parser.add_argument('--network-output', type=str, choices=['logits', 'prob', 'logprob'], default='logits', help='Wether to treat the output of the network as logits, probabilities or log(probabilities) in the constraints.')
+    parser.add_argument('--verbose', default=False, action='store_true', help='Print while training.')
     return parser.parse_args()
 
 
@@ -203,11 +203,11 @@ def test(args, model, oracle, device, test_loader):
     return metrics
 
 
-def Mimic3(eps1, eps2):
+def Mimic3Constraint():
     """
     Setup the Mimic3 constraint. 
     """
-    return lambda model, use_cuda, network_output: Mimic3DatasetConstraint(model, eps1, eps2, use_cuda=use_cuda, network_output=network_output)
+    return lambda model, use_cuda: Mimic3DatasetConstraint(model, use_cuda=use_cuda, network_output='logits')
 
 
 torch.manual_seed(42)
@@ -216,7 +216,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 args = parse_arguments()
 model = MLP(714, 1, 1000, 3).to(device)
-constraint = eval(args.constraint)(model, use_cuda, network_output=args.network_output)
+constraint = eval(args.constraint)(model, use_cuda)
 oracle = DL2_Oracle(learning_rate=0.01, net=model, constraint=constraint, use_cuda=use_cuda)
 mimic_train = MIMIC3(mode='train')
 
