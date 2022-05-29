@@ -1,7 +1,7 @@
 # MIMIC-DL2
 
 This project uses the [DL2 framework](https://github.com/eth-sri/dl2) to create logical constraints for the in-hospital-mortality benchmark dataset for the [MIMIC-III Database](https://physionet.org/content/mimiciii/1.4/). See following paper for the MIMIC-III benchmarks:
-[Multitask learning and benchmarking with clinical time series data](https://arxiv.org/abs/1703.07771).
+[Multitask learning and benchmarking with clinical time series data](arXiv:1703.07771v3).
 
 ## Installation
 The code has been tested on machines running python >= 3.8.
