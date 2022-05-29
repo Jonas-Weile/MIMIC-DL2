@@ -31,9 +31,9 @@ Run the 'main.py' file. The file accepts the following arguments:
 | --num-epochs     |  int   |  False   |  200    |  Number of epochs to train for.                             |
 | --num-iters      |  int   |  False   |  50     |  Number of oracle iterations.                               |
 | --pos-weight     |  float |  False   |  3      |  Weight of positive examples in loss function.              |
-| --print-freq     |  int   |  False   |  10     |  Print frequency.                                           |
+| --print-freq     |  int   |  False   |  10     |  Print frequency for batches.                               |
 | --report-dir     |  str   |  True    |         |  Directory where results should be stored.                  |
-| --verbose        |        |  False   |         |  Print while training.                                      |
+| --verbose        |        |  False   |         |  Print metrics and results.                                 |
 
 
 
