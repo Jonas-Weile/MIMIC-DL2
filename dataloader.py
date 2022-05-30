@@ -1,5 +1,6 @@
 ## General imports
 import os
+import pickle
 import torch
 import numpy as np
 from typing import Any, Tuple
@@ -38,21 +39,13 @@ def cached_data_exists(mode: str) -> bool:
     return os.path.exists(X_cached) and os.path.exists(y_cached)
 
 
-def get_cached_data(mode: str):
-    X_cached = get_cached_filename(True, mode)
-    y_cached = get_cached_filename(False, mode)
-    X = torch.load(X_cached)
-    y = torch.load(y_cached)
-    return (X, y)
-
-
 class MIMIC3(Dataset):
 
     def __init__(
             self,
             mode: str,
-            download: bool = True,
-            use_cached: bool = True,
+            scaler: StandardScaler = None,
+            cache: bool = True,
     ) -> None:
         self.transform = transforms.Compose([transforms.ToTensor()])
         
@@ -63,10 +56,11 @@ class MIMIC3(Dataset):
             folder = 'test'    
 
         # Check if we should use cached data
-        if use_cached and cached_data_exists(mode):
-            X, y = get_cached_data(mode)
+        if cache and cached_data_exists(mode):
+            X, y = self.get_cached_data(mode)
+
         else:
-            X, y = self.prepare_data(mode, folder, download)
+            X, y = self.prepare_data(mode, folder, scaler, cache)
 
         # small fix - make sure the data always contains an even number of data points
         if len(X) % 2 > 0:
@@ -76,7 +70,27 @@ class MIMIC3(Dataset):
         self.data = (X, y)
 
 
-    def prepare_data(self, mode: str,  folder: str, download: bool):
+    def get_cached_data(self, mode: str):
+        X_cached = get_cached_filename(True, mode)
+        y_cached = get_cached_filename(False, mode)
+        X = torch.load(X_cached)
+        y = torch.load(y_cached)
+
+        
+        # if we are training, load the cached scaler as well
+        if mode == 'train':
+            scaler_cached = os.path.join(CACHED_DIR, 'scaler_cached')
+            with open(scaler_cached, 'rb') as f:
+                self.scaler = pickle.load(f)
+                
+        return (X, y)
+
+
+    def get_scaler(self):
+        return self.scaler
+
+
+    def prepare_data(self, mode: str,  folder: str, scaler: StandardScaler, cache: bool):
         reader = InHospitalMortalityReader(dataset_dir=os.path.join(f"data/in-hospital-mortality/{folder}"),
                                                 listfile=os.path.join(f"data/in-hospital-mortality/{mode}_listfile.csv"),
                                                 period_length=48.0)
@@ -90,8 +104,11 @@ class MIMIC3(Dataset):
         X = np.array(imputer.transform(X), dtype=np.float32)
 
         # Normalize data to have zero mean and unit variance
-        scaler = StandardScaler()
-        scaler.fit(X)
+        if not scaler: # If we received a scaler, use this one
+            scaler = StandardScaler()
+            scaler.fit(X)
+            self.scaler = scaler
+
         X = scaler.transform(X)
 
         # Convert to Tensor
@@ -100,13 +117,16 @@ class MIMIC3(Dataset):
         y = torch.reshape(y, (len(y), 1))
         
         # Save the data
-        if download:
+        if cache:
             if not os.path.exists(CACHED_DIR):
                 os.makedirs(CACHED_DIR)
             X_cached = os.path.join(CACHED_DIR, f'{mode}_X_cached.pt')
             y_cached = os.path.join(CACHED_DIR, f'{mode}_y_cached.pt')
+            scaler_cached = os.path.join(CACHED_DIR, 'scaler_cached')
             torch.save(X, X_cached)
             torch.save(y, y_cached)
+            with open(scaler_cached, 'wb') as f:
+                pickle.dump(scaler, f)
 
         return (X, y)
 

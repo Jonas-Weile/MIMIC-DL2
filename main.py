@@ -197,12 +197,9 @@ def test(args, model, oracle, device, test_loader):
     metrics['constr_acc']  = avg_constr_acc / float(num_steps)
 
     if args.verbose:
-        if oracle:
-            print('[Test Set] acc: %.4f, Constr loss: %.3f, CE loss: %.3lf, Constr acc: %.3f, aucroc: %.4f, aucprc: %.4f\n' % (
-                        metrics['acc'], metrics['constr_acc'], metrics['loss'], metrics['constr_loss'], metrics['auroc'], metrics['auprc']))
-        else:
-            print('[Test Set] acc: %.4f, CE loss: %.3lf, aucroc: %.4f, aucprc: %.4f\n' % (
-                        metrics['acc'], metrics['loss'], metrics['auroc'], metrics['auprc']))
+        print('[Test Set] acc: %.4f, Constr loss: %.3f, CE loss: %.3lf, Constr acc: %.3f, aucroc: %.4f, aucprc: %.4f\n' % (
+                    metrics['acc'], metrics['constr_acc'], metrics['loss'], metrics['constr_loss'], metrics['auroc'], metrics['auprc']))
+       
 
     return metrics
 
@@ -211,7 +208,7 @@ def Mimic3Constraint():
     """
     Setup the Mimic3 constraint. 
     """
-    return lambda model, use_cuda: Mimic3DatasetConstraint(model, use_cuda=use_cuda, network_output='logits')
+    return lambda model, scaler, use_cuda: Mimic3DatasetConstraint(model, scaler, use_cuda=use_cuda, network_output='logits')
 
 
 torch.manual_seed(42)
@@ -220,16 +217,17 @@ device = torch.device("cuda" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 args = parse_arguments()
 model = MLP(714, 1, 1000, 3).to(device)
-constraint = eval(args.constraint)(model, use_cuda)
-oracle = DL2_Oracle(learning_rate=0.01, net=model, constraint=constraint, use_cuda=use_cuda)
 mimic_train = MIMIC3(mode='train')
+scaler = mimic_train.get_scaler()
+constraint = eval(args.constraint)(model, scaler, use_cuda)
+oracle = DL2_Oracle(learning_rate=0.01, net=model, constraint=constraint, use_cuda=use_cuda)
 
 if args.grid_search:
-    mimic_test   = MIMIC3(mode='val')
+    mimic_test, _   = MIMIC3(mode='val', scaler=scaler)
     l2_weights = [0.1, 0.01, 0.001, 0.0001, 0.00001]
     pos_weights = [7, 6, 5, 4, 3, 2, 1]
 else:
-    mimic_test   = MIMIC3(mode='test')
+    mimic_test  = MIMIC3(mode='test', scaler=scaler)
     l2_weights = [args.l2]
     pos_weights = [args.pos_weight]
 
