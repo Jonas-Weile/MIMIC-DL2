@@ -177,15 +177,12 @@ def test(args, model, oracle, device, test_loader):
         num_steps += 1
         x_batch, y_batch = data.to(device), target.to(device)
 
-        if oracle:
-            (dl2_batch_loss, constr_acc) = oracle_train(args, x_batch, y_batch, oracle)
-            avg_dl2_loss += dl2_batch_loss.item()
-            avg_constr_acc += constr_acc.item()
+        (dl2_batch_loss, constr_acc) = oracle_train(args, x_batch, y_batch, oracle)
+        avg_dl2_loss += dl2_batch_loss.item()
+        avg_constr_acc += constr_acc.item()
 
         x_output = model(x_batch)
         avg_ce_loss += loss(x_output, y_batch).item()
-        avg_dl2_loss += dl2_batch_loss.item()
-        avg_constr_acc += constr_acc.item()
 
         x_prob = torch.sigmoid(x_output)
         predictions.extend(x_prob.detach().numpy().flatten())
@@ -198,7 +195,7 @@ def test(args, model, oracle, device, test_loader):
 
     if args.verbose:
         print('[Test Set] acc: %.4f, Constr loss: %.3f, CE loss: %.3lf, Constr acc: %.3f, aucroc: %.4f, aucprc: %.4f\n' % (
-                    metrics['acc'], metrics['constr_acc'], metrics['loss'], metrics['constr_loss'], metrics['auroc'], metrics['auprc']))
+                    metrics['acc'], metrics['constr_loss'], metrics['loss'], metrics['constr_acc'], metrics['auroc'], metrics['auprc']))
        
 
     return metrics
