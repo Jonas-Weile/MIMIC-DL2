@@ -114,7 +114,7 @@ def train(args, net, oracle, device, train_loader, optimizer, epoch):
         net.eval()
         avg_ce_loss += ce_batch_loss.item()
 
-        if oracle and args.dl2_weight >= 1e-7:
+        if args.dl2_weight >= 1e-7 and epoch >= args.delay:
             (dl2_batch_loss, constr_acc) = oracle_train(args, x_batch, y_batch, oracle)
             net.train()
             optimizer.zero_grad()
@@ -197,8 +197,12 @@ def test(args, model, oracle, device, test_loader):
     metrics['constr_acc']  = avg_constr_acc / float(num_steps)
 
     if args.verbose:
-        print('[Test Set] acc: %.4f, CE loss: %.3lf, aucroc: %.4f, aucprc: %.4f\n' % (
-                    metrics['acc'], metrics['loss'], metrics['auroc'], metrics['auprc']))
+        if oracle:
+            print('[Test Set] acc: %.4f, Constr loss: %.3f, CE loss: %.3lf, Constr acc: %.3f, aucroc: %.4f, aucprc: %.4f\n' % (
+                        metrics['acc'], metrics['constr_acc'], metrics['loss'], metrics['constr_loss'], metrics['auroc'], metrics['auprc']))
+        else:
+            print('[Test Set] acc: %.4f, CE loss: %.3lf, aucroc: %.4f, aucprc: %.4f\n' % (
+                        metrics['acc'], metrics['loss'], metrics['auroc'], metrics['auprc']))
 
     return metrics
 
