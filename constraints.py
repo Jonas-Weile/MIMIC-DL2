@@ -70,7 +70,7 @@ class Mimic3DatasetConstraint(Constraint):
         normalized_80 = self.normalize(80, index_systolic_blood_pressure)
         
         rule_normalized_systolic_blood_pressure = dl2.Implication(dl2.LEQ(min_normalized_systolic_blood_pressure, normalized_80), 
-                        dl2.GEQ(x_out[:], 0.25))
+                        dl2.GEQ(x_out[:], 0.2))
 
 
         # min(Diastolic blood pressure) >= 120, output >= 0.2
