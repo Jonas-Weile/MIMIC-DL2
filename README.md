@@ -39,5 +39,5 @@ Run the 'main.py' file. The file accepts the following arguments:
 
 ### Example
   ```bash
-  main.py --batch-size 64  --constraint Mimic3Constraint()  --dl2-weight 0.1  --num-epochs 200  --report-dir reports  --verbose
+  main.py --batch-size 64  --constraint Mimic3Constraint()  --dl2-weight 1.0  --num-epochs 50  --report-dir reports  --verbose
   ```
